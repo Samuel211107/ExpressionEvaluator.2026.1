@@ -12,46 +12,63 @@ public class Evaluator
     {
         var postFix = string.Empty;
         var stack = new Stack<char>();
-        foreach (var item in infix)
+        for (int i = 0; i < infix.Length; i++)
         {
-            if (IsOperator(item))
+            char c = infix[i];
+
+            if (char.IsWhiteSpace(c)) continue;
+
+            if (char.IsDigit(c) || c == '.')
+            {
+                string number = "";
+                while (i < infix.Length && (char.IsDigit(infix[i]) || infix[i] == '.'))
+                {
+                    number += infix[i];
+                    i++;
+                }
+                postFix += number + " ";
+                i--;
+            }
+            if (IsOperator(c))
             {
                 if (stack.Count == 0)
                 {
-                    stack.Push(item);
+                    stack.Push(c);
                 }
                 else
                 {
-                    if (item == ')')
+                    if (c == ')')
                     {
-                        do
+                        while (stack.Count > 0 && stack.Peek() != '(')
                         {
-                            postFix += stack.Pop();
-                        } while (stack.Peek() != '(');
-                        stack.Pop();
-                    }
-                    else
-                    {
-                        if (PriorityInfix(item) > PriorityStack(stack.Peek()))
+                            postFix += stack.Pop() + " ";
+                        }
+
+                        if (stack.Count > 0)
                         {
-                            stack.Push(item);
+                            stack.Pop();
                         }
                         else
                         {
-                            postFix += stack.Pop();
-                            stack.Push(item);
+                            throw new Exception("Error: Missing opening parenthesis");
+                        }
+                    }
+                    else
+                    {
+                        {
+                            while (stack.Count > 0 && PriorityStack(stack.Peek()) >= PriorityInfix(c))
+                            {
+                                postFix += stack.Pop() + " ";
+                            }
+                            stack.Push(c);
                         }
                     }
                 }
-            }
-            else
-            {
-                postFix += item;
             }
         }
         while (stack.Count > 0)
         {
-            postFix += stack.Pop();
+            postFix += stack.Pop() + " ";
         }
         return postFix;
     }
@@ -81,13 +98,15 @@ public class Evaluator
     private static double EvaluatePostfix(string postfix)
     {
         var stack = new Stack<double>();
-        foreach (char item in postfix)
+        var tokens = postfix.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+        foreach (string token in tokens)
         {
-            if (IsOperator(item))
+            if (IsOperator(token[0]) && token.Length == 1)
             {
                 var b = stack.Pop();
                 var a = stack.Pop();
-                stack.Push(item switch
+                var result = token[0] switch
                 {
                     '+' => a + b,
                     '-' => a - b,
@@ -95,11 +114,14 @@ public class Evaluator
                     '/' => a / b,
                     '^' => Math.Pow(a, b),
                     _ => throw new Exception("Sintax error."),
-                });
+                };
+
+                stack.Push(result);
             }
+
             else
             {
-                stack.Push(double.Parse(item.ToString()));
+                stack.Push(double.Parse(token));
             }
         }
         return stack.Pop();
