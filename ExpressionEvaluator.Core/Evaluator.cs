@@ -4,13 +4,16 @@ public class Evaluator
 {
     public static double Evaluate(string infix)
     {
-        var postfix = InfixToPostfix(infix);
-        return EvaluatePostfix(postfix);
+        var postfix = InfixToPostfix(infix); // convierte a postfijo
+        return EvaluatePostfix(postfix); // Evalúa el resultado
     }
 
+    // Si yo escribo (5 + 3) * 2, el código lo que hace es convertir internamente a 5 3 + 2 *. Esto se llama Notación Postfija :)
+    
     private static string InfixToPostfix(string infix)
     {
         var postFix = string.Empty;
+        //Uso esta pila para ir guardando los signos (+, *, /) temporalmente mientras decido cuál es más importante.
         var stack = new Stack<char>();
         for (int i = 0; i < infix.Length; i++)
         {
@@ -72,7 +75,7 @@ public class Evaluator
         }
         return postFix;
     }
-
+    // Aquí definí unas reglas de prioridad.
     private static int PriorityStack(char item) => item switch
     {
         '^' => 3,
@@ -94,7 +97,8 @@ public class Evaluator
         '(' => 5,
         _ => throw new Exception("Sintax error."),
     };
-
+    // El código va leyendo de izquierda a derecha, y en cuanto ve un signo, agarra los dos números anteriores.
+    // hace la cuenta y sigue adelante hasta que solo queda el resultado final. 
     private static double EvaluatePostfix(string postfix)
     {
         var stack = new Stack<double>();
